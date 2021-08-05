@@ -1,7 +1,7 @@
 # Configure and downloading plugins for aws
 provider "aws" {
-  #access_key = "${var.access_key}"
-  #secret_key = "${var.secret_key}"
+  access_key = "${var.access_key}"
+  secret_key = "${var.secret_key}"
   region     = "${var.aws_region}"
 }
 
@@ -334,7 +334,7 @@ resource "aws_instance" "demoinstance1" {
 resource "aws_instance" "forwarder" {
 
   # AMI based on region 
-  ami = "${lookup(var.ami, var.aws_region)}"
+  ami = "${var.aws_region}"
 
   # Launching instance into subnet 
   subnet_id = "${aws_subnet.demosubnet.id}"
@@ -380,16 +380,7 @@ resource "aws_instance" "forwarder" {
     type = "ssh"
   }
   
-  # Installing splunk & creating distributed indexer clustering on newly created instance
-  provisioner "remote-exec" {
-    inline = [
-      "sudo yum update -y",
-      "wget -O splunkforwarder-8.1.1-08187535c166-Linux-x86_64.tgz 'https://www.splunk.com/bin/splunk/DownloadActivityServlet?architecture=x86_64&platform=linux&version=8.1.1&product=universalforwarder&filename=splunkforwarder-8.1.1-08187535c166-Linux-x86_64.tgz&wget=true'",
-      "tar -xvzf splunkforwarder-8.1.1-08187535c166-Linux-x86_64.tgz",
-      "cd /home/ec2-user/splunkforwarder/bin",
-      "./splunk start --accept-license --answer-yes --no-prompt --seed-passwd admin123",
-      "./splunk restart"      
-  ]
- }
+user_data = "${file("data.sh")}"
+  
 }
 
